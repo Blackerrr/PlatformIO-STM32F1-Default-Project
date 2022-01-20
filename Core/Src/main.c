@@ -25,7 +25,6 @@
 /* USER CODE BEGIN Includes */
 
 #include "mpu6050.h"
-#include "retarget.h"
 
 /* USER CODE END Includes */
 
@@ -88,8 +87,6 @@ int main(void)
     MX_USART1_UART_Init();
     /* USER CODE BEGIN 2 */
     Usart_SendString(&huart1, (uint8_t*)"This is a usart demo!");
-    // printf("This is a prinf demo!");
-    // my_printf("this is a");
 
 
     /* USER CODE END 2 */

@@ -21,9 +21,6 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
-#include "stdio.h"
-#include <stdarg.h>
-#include <string.h>
 
 /* USER CODE END 0 */
 
@@ -125,27 +122,6 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 
 /* USER CODE BEGIN 1 */
 
-// #ifdef __GNUC__
-// /* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
-//    set to 'Yes') calls __io_putchar() */
-// #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
-// #else
-// #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
-// #endif /* __GNUC__ */
-// /**
-//   * @brief  Retargets the C library printf function to the USART.
-//   * @param  None
-//   * @retval None
-//   */
-// PUTCHAR_PROTOTYPE
-// {
-//     /* Place your implementation of fputc here */
-//     /* e.g. write a character to the EVAL_COM1 and Loop until the end of transmission */
-//     HAL_UART_Transmit(&huart1, (uint8_t*)&ch, 1, 0xFFFF);
-
-//     return ch;
-// }
-
 
 /**
  * @description: 串口发送字符串
@@ -176,49 +152,6 @@ void usart1_send_char(uint8_t c)
     HAL_UART_Transmit(&huart1, &c, 1, 1000);
 }
 
-// void vprint(const char *fmt, va_list argp)
-// {
-//     char string[200];
-//     if(0 < vsprintf(string,fmt,argp)) // build string
-//     {
-//         HAL_UART_Transmit(&huart1, (uint8_t*)string, strlen(string), 0xffffff); // send message via UART
-//     }
-// }
-
-// void my_printf(const char *fmt, ...) // custom printf() function
-// {
-//     va_list argp;
-//     va_start(argp, fmt);
-//     vprint(fmt, argp);
-//     va_end(argp);
-// }
 
 
-// arm-none-eabi 编译器下重定向 fputs, fgets失效
-// /**
-//  * @description: 重定向 c 库函数 printf 到串口 USARTx，重定向后可使用 printf 函数
-//  * @param {int} ch
-//  * @param {FILE} *f
-//  * @return {*}
-//  */
-// int fputc(int ch, FILE *f)
-// {
-//     /* 发送一个字节数据到串口 USARTx */
-//     HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 0xFFFF);
-//     return (ch);
-// }
-
-// /**
-//  * @description: 重定向 c 库函数 scanf 到串口 USARTx，重写向后可使用 scanf、getchar 等函数
-//  * @param {FILE} *f
-//  * @return {*}
-//  */
-// int fgetc(FILE *f)
-// {
-//     int ch;
-//     /* 等待串口输入数据 */
-//     while (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_RXNE) == RESET);
-//     HAL_UART_Receive(&huart1, (uint8_t *)&ch, 1, 0xFFFF);
-//     return (ch);
-// }
 /* USER CODE END 1 */

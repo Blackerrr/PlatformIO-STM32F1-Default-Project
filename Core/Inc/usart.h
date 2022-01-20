@@ -46,11 +46,6 @@ void MX_USART1_UART_Init(void);
 void Usart_SendString(UART_HandleTypeDef* uartHandle, uint8_t* str);
 void usart1_send_char(uint8_t c);
 
-// void vprint(const char *fmt, va_list argp);
-// void my_printf(const char *fmt, ...);
-
-// int fputc(int ch, FILE *f);
-// int fgetc(FILE *f);
 
 /* USER CODE END Prototypes */
 
