@@ -151,7 +151,4 @@ void usart1_send_char(uint8_t c)
     };
     HAL_UART_Transmit(&huart1, &c, 1, 1000);
 }
-
-
-
 /* USER CODE END 1 */
