@@ -18,12 +18,14 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
 #include "mpu6050.h"
+#include "retarget.h"
 
 /* USER CODE END Includes */
 
@@ -57,6 +59,7 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
+
 /**
   * @brief  The application entry point.
   * @retval int
@@ -82,7 +85,13 @@ int main(void)
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
+    MX_USART1_UART_Init();
     /* USER CODE BEGIN 2 */
+    Usart_SendString(&huart1, (uint8_t*)"This is a usart demo!");
+    // printf("This is a prinf demo!");
+    // my_printf("this is a");
+
+
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -90,12 +99,17 @@ int main(void)
     while (1)
     {
         /* USER CODE END WHILE */
+        HAL_GPIO_WritePin(LED0_GPIO_Port, LED0_Pin, 0);
+        HAL_Delay(1000);
+        HAL_GPIO_WritePin(LED0_GPIO_Port, LED0_Pin, 1);
+        HAL_Delay(1000);
+        
+        
 
         /* USER CODE BEGIN 3 */
     }
     /* USER CODE END 3 */
 }
-
 
 /**
   * @brief System Clock Configuration

@@ -2,10 +2,16 @@
     "git.ignoreLimitWarning": true,
     "files.associations": {
         "main.h": "c",
-        "stm32f1xx_hal.h": "c"
+        "stm32f1xx_hal.h": "c",
+        "mpu6050.h": "c",
+        "usart.h": "c",
+        "stdio.h": "c",
+        "retarget.h": "c",
+        "_syslist.h": "c"
     },
     "editor.tabSize": 4,
     "editor.tabCompletion": "on",
+    "C_Cpp.errorSquiggles": "Disabled",
     // "workbench.editor.tabSizing": "shrink"
     
     

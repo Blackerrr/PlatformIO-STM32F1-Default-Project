@@ -1,3 +1,12 @@
+/*
+ * @Date         : 2022-01-19 16:29:37
+ * @LastEditors  : liu wei
+ * @LastEditTime : 2022-01-19 21:05:49
+ * @FilePath     : \LED\Core\Inc\mpu6050.h
+ * @Github       : https://github.com/Blackerrr
+ * @Coding       : utf-8
+ */
+
 #ifndef __MPU6050_H
 #define __MPU6050_H
 #include "main.h"

@@ -1,20 +1,37 @@
+/*
+ * @Date         : 2022-01-19 16:28:47
+ * @LastEditors  : liu wei
+ * @LastEditTime : 2022-01-19 21:25:52
+ * @FilePath     : \LED\Core\Src\mpu6050.c
+ * @Github       : https://github.com/Blackerrr
+ * @Coding       : utf-8
+ */
+
 #include "mpu6050.h"
 
 MPU6050_InitDefine mpu6050 = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 //MPU6050_Original mpu6050_original = {0, 0, 0, 0, 0, 0, 295, -201, -116, 0, 0, 0};
 MPU6050_Original mpu6050_original = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 float q0 = 1, q1 = 0, q2 = 0, q3 = 0;  //
-float exInt = 0, eyInt = 0, ezInt = 0; //������������ۼƻ���
-unsigned int a_LSB = 16384;            //aԭʼֵϵ��
-float g_LSB = 32.8;                    //gԭʼֵϵ��
+float exInt = 0, eyInt = 0, ezInt = 0; // 
+unsigned int a_LSB = 16384;            // acceleration least significant bit
+float g_LSB = 32.8;                    // Gyro least significant bit
 
-//MPU IIC delay function
+/**
+ * @description: MPU IIC delay function
+ * @param {*}
+ * @return {*}
+ */
 void MPU_IIC_Delay(void)
 {
-    // delay_us(2);    // 你好
+    // delay_us(2);    
 }
 
-// initialize MPUIIC
+/**
+ * @description: 
+ * @param {*}
+ * @return {*}
+ */
 void MPU_IIC_Init(void)
 {
     GPIO_InitTypeDef GPIO_Initure;
@@ -31,7 +48,13 @@ void MPU_IIC_Init(void)
     MPU_IIC_SCL = 1;
     MPU_IIC_SDA = 1;
 }
-// Send IIC start signal
+
+
+/**
+ * @description:  Send IIC start signal
+ * @param {*}
+ * @return {*}
+ */
 void MPU_IIC_Start(void)
 {
     MPU_SDA_OUT();
@@ -42,7 +65,12 @@ void MPU_IIC_Start(void)
     MPU_IIC_Delay();
     MPU_IIC_SCL = 0;    // Clamp the I2C bus, ready to send or receive data
 }
-// send iic stop signal
+
+/**
+ * @description: send iic stop signal
+ * @param {*}
+ * @return {*}
+ */
 void MPU_IIC_Stop(void)
 {
     MPU_SDA_OUT();
@@ -57,6 +85,11 @@ void MPU_IIC_Stop(void)
 // Wait for the answer signal to arrive
 // Return value: 1, fail
 //               0, success
+/**
+ * @description: 等待应答信号到来， Return value: 1, fail，0, success
+ * @param {*}
+ * @return {*} Return value: 1, fail，0, success
+ */
 u8 MPU_IIC_Wait_Ack(void)
 {
     u8 ucErrTime = 0;
@@ -77,7 +110,12 @@ u8 MPU_IIC_Wait_Ack(void)
     MPU_IIC_SCL = 0; // clock out 0
     return 0;
 }
-// generate ACK response
+
+/**
+ * @description: generate ACK response
+ * @param {*}
+ * @return {*}
+ */
 void MPU_IIC_Ack(void)
 {
     MPU_IIC_SCL = 0;
@@ -88,7 +126,12 @@ void MPU_IIC_Ack(void)
     MPU_IIC_Delay();
     MPU_IIC_SCL = 0;
 }
-// No ACK response is generated
+
+/**
+ * @description: No ACK response is generated
+ * @param {*}
+ * @return {*}
+ */
 void MPU_IIC_NAck(void)
 {
     MPU_IIC_SCL = 0;
@@ -100,9 +143,11 @@ void MPU_IIC_NAck(void)
     MPU_IIC_SCL = 0;
 }
 
-//IIC sends a byte
-// 1, there is a response
-// 0, no response
+/**
+ * @description: IIC发送一个字节，返回从机有无应答，1，有应答，0，无应答
+ * @param {u8} txd
+ * @return {*}
+ */
 void MPU_IIC_Send_Byte(u8 txd)
 {
     u8 t;
@@ -118,7 +163,12 @@ void MPU_IIC_Send_Byte(u8 txd)
         MPU_IIC_Delay();
     }
 }
-// Read 1 byte, when ack=1, send ACK, when ack=0, send nACK
+
+/**
+ * @description: Read 1 byte, when ack=1, send ACK, when ack=0, send nACK
+ * @param {*}
+ * @return {*}
+ */
 u8 MPU_IIC_Read_Byte(unsigned char ack)
 {
     unsigned char i, receive = 0;
@@ -140,9 +190,11 @@ u8 MPU_IIC_Read_Byte(unsigned char ack)
     return receive;
 }
 
-// initialize mpu6050
-// return value: 0, success
-//           other, error code
+/**
+ * @description: initialize mpu6050,  return value: 0, success, other, error code
+ * @param {*}
+ * @return {*}
+ */
 u8 MPU_Init(void)
 {
     // u8 res;
@@ -190,10 +242,12 @@ u8 MPU_Init(void)
 }
 
 
-// Set MPU6050 Gyro Sensor Full Scale Range
-// fsr:0,±250dps;1,±500dps;2,±1000dps;3,±2000dps
-// return value: 0, set successfully
-//           other, Setup failed
+/**
+ * @description: set MPU6050 Gyro Sensor Full Scale Range,
+ *               fsr:0,±250dps;1,±500dps;2,±1000dps;3,±2000dps
+ * @param {u8} fsr
+ * @return {u8} 0, set successfully; other, Setup failed
+ */
 u8 MPU_Set_Gyro_Fsr(u8 fsr)
 {
     return MPU_Write_Byte(MPU_GYRO_CFG_REG, fsr << 3); //���������������̷�Χ
@@ -230,10 +284,11 @@ u8 MPU_Set_LPF(u16 lpf)
     return MPU_Write_Byte(MPU_CFG_REG, data); //�������ֵ�ͨ�˲���
 }
 
-// Set the sampling rate of MPU6050 (assume Fs=1KHz)
-// rate:4~1000(Hz)
-// return value: 0, set successfully
-//           other, Setup failed
+/**
+ * @description: Set the sampling rate of MPU6050 (assume Fs=1KHz)
+ * @param {u16} rate 4~1000(Hz)
+ * @return {u8} 0, set successfully, other, Setup failed
+ */
 u8 MPU_Set_Rate(u16 rate)
 {
     u8 data;
@@ -246,8 +301,11 @@ u8 MPU_Set_Rate(u16 rate)
     return MPU_Set_LPF(rate / 2);                     // Automatically set LPF to half the sample rate
 }
 
-// get temperature value
-// Return value: temperature value (expanded 100 times)
+/**
+ * @description: get temperature value
+ * @param {*}
+ * @return {short} temperature value (expanded 100 times)
+ */
 short MPU_Get_Temperature(void)
 {
     u8 buf[2];
@@ -260,10 +318,12 @@ short MPU_Get_Temperature(void)
     ;
 }
 
-// get gyroscope value (original value)
-// gx,gy,gz: original readings of gyroscope x, y, z axes (with sign)
-// return value: 0, success
-//           other, error code
+/**
+ * @description: get gyroscope value (original value)
+ *               gx,gy,gz: original readings of gyroscope x, y, z axes (with sign)
+ * @param {*}
+ * @return {u8} 0, success,  other, error code
+ */
 u8 MPU_Get_Gyroscope()
 {
     u8 buf[6], res;
@@ -278,10 +338,12 @@ u8 MPU_Get_Gyroscope()
     ;
 }
 
-// get acceleration value (raw value)
-// ax, ay, az: readings of accelerometer x, y, z axes (with sign)
-// return value: 0, success
-//           other, error code
+/**
+ * @description: get acceleration value (raw value)
+ *               ax, ay, az: readings of accelerometer x, y, z axes (with sign)
+ * @param {*}
+ * @return {u8}  0, success, other, error code
+ */
 u8 MPU_Get_Accelerometer()
 {
     u8 buf[6], res;
@@ -303,6 +365,14 @@ u8 MPU_Get_Accelerometer()
 // buf: data area
 // return value: 0, normal
 // other, error code
+/**
+ * @description: IIC continuous write
+ * @param {u8} addr device address
+ * @param {u8} reg  register address
+ * @param {u8} len  length of write
+ * @param {u8} *buf data area
+ * @return {u8} 0, normal, other, error code
+ */
 u8 MPU_Write_Len(u8 addr, u8 reg, u8 len, u8 *buf)
 {
     u8 i;
@@ -328,13 +398,14 @@ u8 MPU_Write_Len(u8 addr, u8 reg, u8 len, u8 *buf)
     return 0;
 }
 
-//IIC continuous read
-//addr: device address
-//reg: register address to read
-//len: length to read
-//buf: read data storage area
-//return value: 0, normal
-//          other, error code
+/**
+ * @description: IIC continuous read
+ * @param {u8} addr  device address 
+ * @param {u8} reg   register address to read
+ * @param {u8} len   length to read
+ * @param {u8} *buf  read data storage area
+ * @return {u8} 0, normal,  other, error code
+ */
 u8 MPU_Read_Len(u8 addr, u8 reg, u8 len, u8 *buf)
 {
     MPU_IIC_Start();
@@ -367,6 +438,12 @@ u8 MPU_Read_Len(u8 addr, u8 reg, u8 len, u8 *buf)
 //data: data
 //return value: 0, normal
 //          other, error code
+/**
+ * @description: IIC writes a byte
+ * @param {u8} reg  register address
+ * @param {u8} data 要写入的数据
+ * @return {u8}     0, normal,  other, error codes
+ */
 u8 MPU_Write_Byte(u8 reg, u8 data)
 {
     MPU_IIC_Start();
@@ -391,6 +468,11 @@ u8 MPU_Write_Byte(u8 reg, u8 data)
 //IIC reads a byte
 //reg: register address
 //return value: read data
+/**
+ * @description:  IIC reads a byte
+ * @param {u8} reg  register address
+ * @return {u8}     read data
+ */
 u8 MPU_Read_Byte(u8 reg)
 {
     u8 res;
@@ -430,7 +512,12 @@ float Q_angle_roll = 0.001, Q_gyro_roll = 0.005; // Confidence of angle data, Co
 float R_angle_roll = 0.5, C_0_roll = 1;
 float q_bias_roll, angle_err_roll, PCt_0_roll, PCt_1_roll, E_roll, K_0_roll, K_1_roll, t_0_roll, t_1_roll;
 
-// kalman filter
+
+/**
+ * @description:  kalman filter
+ * @param {*}
+ * @return {float} 解算出来的角度
+ */
 float Kalman_Filter_Roll(void)
 {
     float angle_m = atan2(mpu6050.Ay, mpu6050.Az) * 180 / 3.14;
@@ -472,7 +559,11 @@ float Q_angle_pitch = 3, Q_gyro_pitch = 1;  // confidence of angle, confidence o
 float R_angle_pitch = 0.03, C_0_pitch = 1;
 float q_bias_pitch, angle_err_pitch, PCt_0_pitch, PCt_1_pitch, E_pitch, K_0_pitch, K_1_pitch, t_0_pitch, t_1_pitch;
 
-
+/**
+ * @description:  kalman filter
+ * @param {*}
+ * @return {float} 解算出来的角度
+ */
 float Kalman_Filter_Pitch(void)
 {
     float angle_m = atan2(mpu6050.Ax, mpu6050.Az) * -180 / 3.14;
@@ -514,6 +605,11 @@ float Q_angle_yaw = 5, Q_gyro_yaw = 3; // confidence of angle, confidence of ang
 float R_angle_yaw = 0.03, C_0_yaw = 1;
 float q_bias_yaw, angle_err_yaw, PCt_0_yaw, PCt_1_yaw, E_yaw, K_0_yaw, K_1_yaw, t_0_yaw, t_1_yaw;
 
+/**
+ * @description:  kalman filter
+ * @param {*}
+ * @return {float} 解算出来的角度
+ */
 float Kalman_Filter_Yaw(void)
 {
     float angle_m = atan2(mpu6050.Ax, mpu6050.Ay) * 180 / 3.14;
@@ -624,7 +720,11 @@ float Kalman_Filter_Yaw(void)
 //     mpu6050.Roll = atan2(2.f * q2q3 + 2.f * q0q1, q0q0 - q1q1 - q2q2 + q3q3) * 57.3f;
 // }
 
-// Kalman solution
+/**
+ * @description: Kalman solution
+ * @param {*}
+ * @return {*}
+ */
 void MPU_Update(void)
 {
     MPU_Get_Gyroscope();
