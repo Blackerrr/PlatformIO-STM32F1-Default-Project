@@ -18,14 +18,13 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include "mpu6050.h"
-#include "retarget.h"
 
 /* USER CODE END Includes */
 
@@ -86,11 +85,11 @@ int main(void)
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
     MX_USART1_UART_Init();
+    MX_TIM6_Init();
     /* USER CODE BEGIN 2 */
-    RetargetInit(&huart1);   /*重定向huart1*/
-    Usart_SendString(&huart1, (uint8_t*)"This is a usart demo!");
-    printf("this is a printf demo!!");
-
+    Timer_Initialize();
+    RetargetInit(&huart1);        /*重定向huart1*/
+    printf("niming test!!\r\n");
 
     /* USER CODE END 2 */
 
@@ -99,14 +98,13 @@ int main(void)
     while (1)
     {
         /* USER CODE END WHILE */
-        HAL_GPIO_WritePin(LED0_GPIO_Port, LED0_Pin, 0);
-        HAL_Delay(1000);
-        HAL_GPIO_WritePin(LED0_GPIO_Port, LED0_Pin, 1);
-        HAL_Delay(1000);
-        
-        
 
         /* USER CODE BEGIN 3 */
+        HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
+        HAL_Delay(1000);
+        HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
+        HAL_Delay(1000);
+
     }
     /* USER CODE END 3 */
 }

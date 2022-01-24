@@ -32,7 +32,9 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "sys.h"
-#include "sys.h"
+#include "report.h"
+#include "mpu6050.h"
+#include "retarget.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
