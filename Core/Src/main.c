@@ -75,11 +75,12 @@ int main(void)
 
     /* USER CODE BEGIN Init */
     /* USER CODE END Init */
-
+    
     /* Configure the system clock */
     SystemClock_Config();
 
     /* USER CODE BEGIN SysInit */
+    delay_init(72);
     /* USER CODE END SysInit */
 
     /* Initialize all configured peripherals */

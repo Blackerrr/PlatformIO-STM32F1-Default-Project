@@ -1,7 +1,7 @@
 /*
  * @Date         : 2022-01-19 16:33:00
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-01-19 21:35:24
+ * @LastEditTime : 2022-01-24 22:26:00
  * @FilePath     : \LED\Core\Inc\sys.h
  * @Github       : https://github.com/Blackerrr
  * @Coding       : utf-8
@@ -23,9 +23,9 @@ typedef __IO int32_t vs32;
 typedef __IO int16_t vs16;
 typedef __IO int8_t vs8;
 
-typedef __I int32_t vsc32;
-typedef __I int16_t vsc16;
-typedef __I int8_t vsc8;
+typedef __IO int32_t vsc32;
+typedef __IO int16_t vsc16;
+typedef __IO int8_t vsc8;
 
 typedef uint32_t u32;
 typedef uint16_t u16;

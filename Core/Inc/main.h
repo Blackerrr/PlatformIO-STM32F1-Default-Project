@@ -32,6 +32,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "sys.h"
+#include "delay.h"
 #include "report.h"
 #include "mpu6050.h"
 #include "retarget.h"
