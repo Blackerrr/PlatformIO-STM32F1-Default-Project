@@ -1,7 +1,7 @@
 /*
  * @Date         : 2022-01-24 19:51:02
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-01-24 21:51:52
+ * @LastEditTime : 2022-01-25 11:27:28
  * @brief        : 向匿名地面站发送自定义数据, 发送的是不定长数据
  * @FilePath     : \LED\Core\Src\report.c
  * @Github       : https://github.com/Blackerrr
@@ -12,7 +12,7 @@
 #include "string.h"
 #include "math.h"
 
-uint8_t DataScope_OutPut_Buffer[100] = {0}; //串口发送缓冲区
+uint8_t DataScope_OutPut_Buffer[100] = {0};   //串口发送缓冲区,
 
 /**
  * @description:
@@ -130,7 +130,7 @@ void DataScope_Get_Channel_Data(float Data, unsigned char Channel, uint8_t flag)
  * @param {uint8_t} len     有效数据个数
  * @return {*}
  */
-void wireless_niming_report(uint8_t fun, uint8_t *data, uint8_t len)
+void Usart_Send_Data(uint8_t fun, uint8_t *data, uint8_t len)
 {
     uint8_t send_buf[100];
     uint8_t cnt = 0;
@@ -141,8 +141,6 @@ void wireless_niming_report(uint8_t fun, uint8_t *data, uint8_t len)
     send_buf[cnt++] = len;
 
     send_buf[len + 4] = 0;                  //校验数置
-    // for ( ; cnt < len + 4; cnt++)
-    //     send_buf[cnt] = data[cnt - 4];      
     memcpy(send_buf + 4, data, len);           //复制数据
     for (cnt = 0; cnt < len + 4; cnt++)
         send_buf[len + 4] += send_buf[cnt]; //计算校验和
@@ -154,7 +152,7 @@ void wireless_niming_report(uint8_t fun, uint8_t *data, uint8_t len)
  * @param {*}
  * @return {*}
  */
-void niming_report(void)
+void ANO_DT_UserData_Report(void)
 {
     uint8_t channel_number = 0;
     /*****************************生成通道数据************************************/
@@ -180,5 +178,56 @@ void niming_report(void)
     DataScope_Get_Channel_Data(0, 20, 1);
     channel_number = 5;
 
-    wireless_niming_report(0xF1, DataScope_OutPut_Buffer + 1, channel_number * 4);
+    Usart_Send_Data(0xF1, DataScope_OutPut_Buffer + 1, channel_number * 4);
+}
+
+void ANO_DT_Send_Senser(void)
+{
+    u8 _cnt = 0;
+    vs16 _temp;
+
+    DataScope_OutPut_Buffer[_cnt++] = 0xAA;
+    DataScope_OutPut_Buffer[_cnt++] = 0xAA;
+    DataScope_OutPut_Buffer[_cnt++] = 0x02;
+    DataScope_OutPut_Buffer[_cnt++] = 0;
+
+    _temp = mpu6050_original.ax;
+    DataScope_OutPut_Buffer[_cnt++] = BYTE1(_temp);
+    DataScope_OutPut_Buffer[_cnt++] = BYTE0(_temp);
+    _temp = mpu6050_original.ay;
+    DataScope_OutPut_Buffer[_cnt++] = BYTE1(_temp);
+    DataScope_OutPut_Buffer[_cnt++] = BYTE0(_temp);
+    _temp = mpu6050_original.az;
+    DataScope_OutPut_Buffer[_cnt++] = BYTE1(_temp);
+    DataScope_OutPut_Buffer[_cnt++] = BYTE0(_temp);
+
+    _temp = mpu6050_original.gx;
+    DataScope_OutPut_Buffer[_cnt++] = BYTE1(_temp);
+    DataScope_OutPut_Buffer[_cnt++] = BYTE0(_temp);
+    _temp = mpu6050_original.gy;
+    DataScope_OutPut_Buffer[_cnt++] = BYTE1(_temp);
+    DataScope_OutPut_Buffer[_cnt++] = BYTE0(_temp);
+    _temp = mpu6050_original.gz;
+    DataScope_OutPut_Buffer[_cnt++] = BYTE1(_temp);
+    DataScope_OutPut_Buffer[_cnt++] = BYTE0(_temp);
+
+    /*****************磁力计*********************/
+    _temp = 0;
+    DataScope_OutPut_Buffer[_cnt++] = BYTE1(_temp);
+    DataScope_OutPut_Buffer[_cnt++] = BYTE0(_temp);
+    _temp = 0;
+    DataScope_OutPut_Buffer[_cnt++] = BYTE1(_temp);
+    DataScope_OutPut_Buffer[_cnt++] = BYTE0(_temp);
+    _temp = 0;
+    DataScope_OutPut_Buffer[_cnt++] = BYTE1(_temp);
+    DataScope_OutPut_Buffer[_cnt++] = BYTE0(_temp);
+
+    DataScope_OutPut_Buffer[3] = _cnt - 4;
+
+    u8 sum = 0;
+    for (u8 i = 0; i < _cnt; i++)
+        sum += DataScope_OutPut_Buffer[i];
+    DataScope_OutPut_Buffer[_cnt++] = sum;
+
+    HAL_UART_Transmit(&huart1, DataScope_OutPut_Buffer, _cnt, 1000);
 }

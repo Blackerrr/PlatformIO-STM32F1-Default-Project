@@ -1,7 +1,7 @@
 /*
  * @Date         : 2022-01-19 16:29:37
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-01-19 21:05:49
+ * @LastEditTime : 2022-01-24 22:29:29
  * @FilePath     : \LED\Core\Inc\mpu6050.h
  * @Github       : https://github.com/Blackerrr
  * @Coding       : utf-8
@@ -12,8 +12,6 @@
 #include "main.h"
 #include "math.h"
 #include "stdlib.h"
-#include "sys.h"
-// #include "delay.h"
 
 /********************************* MPUIIC ***************************************/
 

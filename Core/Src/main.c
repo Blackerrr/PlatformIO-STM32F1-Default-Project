@@ -90,7 +90,8 @@ int main(void)
     /* USER CODE BEGIN 2 */
     Timer_Initialize();
     RetargetInit(&huart1);        /*重定向huart1*/
-    printf("niming test!!\r\n");
+
+    MPU_Init();
 
     /* USER CODE END 2 */
 
@@ -105,6 +106,8 @@ int main(void)
         HAL_Delay(1000);
         HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
         HAL_Delay(1000);
+
+
 
     }
     /* USER CODE END 3 */

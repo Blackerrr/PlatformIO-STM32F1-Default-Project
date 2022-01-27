@@ -1,7 +1,7 @@
 /*
  * @Date         : 2022-01-19 16:28:47
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-01-19 21:25:52
+ * @LastEditTime : 2022-01-25 11:42:21
  * @FilePath     : \LED\Core\Src\mpu6050.c
  * @Github       : https://github.com/Blackerrr
  * @Coding       : utf-8
@@ -24,7 +24,7 @@ float g_LSB = 32.8;                    // Gyro least significant bit
  */
 void MPU_IIC_Delay(void)
 {
-    // delay_us(2);    
+    delay_us(2);    
 }
 
 /**
@@ -199,19 +199,19 @@ u8 MPU_Init(void)
 {
     // u8 res;
 
-    GPIO_InitTypeDef GPIO_Initure;
+    // GPIO_InitTypeDef GPIO_Initure;
 
-    __HAL_RCC_GPIOA_CLK_ENABLE(); // Enable GPIOA clock
+    // __HAL_RCC_GPIOA_CLK_ENABLE(); // Enable GPIOA clock
 
-    GPIO_Initure.Pin = GPIO_PIN_15;            //PA15
-    GPIO_Initure.Mode = GPIO_MODE_OUTPUT_PP;   // Push-pull output
-    GPIO_Initure.Pull = GPIO_PULLUP;           // pull up
-    GPIO_Initure.Speed = GPIO_SPEED_FREQ_HIGH; // high speed
-    HAL_GPIO_Init(GPIOA, &GPIO_Initure);
+    // GPIO_Initure.Pin = GPIO_PIN_15;            //PA15
+    // GPIO_Initure.Mode = GPIO_MODE_OUTPUT_PP;   // Push-pull output
+    // GPIO_Initure.Pull = GPIO_PULLUP;           // pull up
+    // GPIO_Initure.Speed = GPIO_SPEED_FREQ_HIGH; // high speed
+    // HAL_GPIO_Init(GPIOA, &GPIO_Initure);
 
-    __HAL_AFIO_REMAP_SWJ_DISABLE();
-    // JTAG is prohibited, so that PA15 can be used as normal IO, otherwise PA15 cannot be used as normal IO!!!
-    __HAL_AFIO_REMAP_SWJ_DISABLE();
+    // __HAL_AFIO_REMAP_SWJ_DISABLE();
+    // // JTAG is prohibited, so that PA15 can be used as normal IO, otherwise PA15 cannot be used as normal IO!!!
+    // __HAL_AFIO_REMAP_SWJ_DISABLE();
 
     // MPU_AD0_CTRL = 0; // AD0 pin is low level, the slave address is: 0X68
 
@@ -250,7 +250,7 @@ u8 MPU_Init(void)
  */
 u8 MPU_Set_Gyro_Fsr(u8 fsr)
 {
-    return MPU_Write_Byte(MPU_GYRO_CFG_REG, fsr << 3); //���������������̷�Χ
+    return MPU_Write_Byte(MPU_GYRO_CFG_REG, fsr << 3);  
 }
 
 // Set the full-scale range of the MPU6050 accelerometer
@@ -259,7 +259,7 @@ u8 MPU_Set_Gyro_Fsr(u8 fsr)
 //           other, Setup failed
 u8 MPU_Set_Accel_Fsr(u8 fsr)
 {
-    return MPU_Write_Byte(MPU_ACCEL_CFG_REG, fsr << 3); //���ü��ٶȴ����������̷�Χ
+    return MPU_Write_Byte(MPU_ACCEL_CFG_REG, fsr << 3); 
 }
 
 // Setting up the digital low-pass filter of the MPU6050
@@ -281,7 +281,7 @@ u8 MPU_Set_LPF(u16 lpf)
         data = 5;
     else
         data = 6;
-    return MPU_Write_Byte(MPU_CFG_REG, data); //�������ֵ�ͨ�˲���
+    return MPU_Write_Byte(MPU_CFG_REG, data); 
 }
 
 /**
@@ -606,7 +606,7 @@ float R_angle_yaw = 0.03, C_0_yaw = 1;
 float q_bias_yaw, angle_err_yaw, PCt_0_yaw, PCt_1_yaw, E_yaw, K_0_yaw, K_1_yaw, t_0_yaw, t_1_yaw;
 
 /**
- * @description:  kalman filter
+ * @description:  kalman filter 航向角
  * @param {*}
  * @return {float} 解算出来的角度
  */

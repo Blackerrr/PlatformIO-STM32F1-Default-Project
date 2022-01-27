@@ -1,7 +1,7 @@
 /*
  * @Date         : 2022-01-24 22:19:57
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-01-24 22:19:58
+ * @LastEditTime : 2022-01-25 10:57:17
  * @brief        : Do not edit
  * @FilePath     : \LED\Core\Src\delay.c
  * @Github       : https://github.com/Blackerrr
@@ -165,9 +165,9 @@ void delay_us(u32 nus)
     u32 ticks;
     u32 told, tnow, tcnt = 0;
     u32 reload = SysTick->LOAD;				//LOAD的值
-    ticks = nus * fac_us; 						//需要的节拍数
+    ticks = nus * fac_us; 				    //需要的节拍数
     delay_osschedlock();					//阻止OS调度，防止打断us延时
-    told = SysTick->VAL;        				//刚进入时的计数器值
+    told = SysTick->VAL;        			//刚进入时的计数器值
     while (1)
     {
         tnow = SysTick->VAL;
@@ -176,7 +176,7 @@ void delay_us(u32 nus)
             if (tnow < told)tcnt += told - tnow;	//这里注意一下SYSTICK是一个递减的计数器就可以了.
             else tcnt += reload - tnow + told;
             told = tnow;
-            if (tcnt >= ticks)break;			//时间超过/等于要延迟的时间,则退出.
+            if (tcnt >= ticks)break;			   //时间超过/等于要延迟的时间,则退出.
         }
     };
     delay_osschedunlock();					//恢复OS调度
@@ -205,18 +205,20 @@ void delay_us(u32 nus)
 {
     u32 ticks;
     u32 told, tnow, tcnt = 0;
-    u32 reload = SysTick->LOAD;				//LOAD的值
-    ticks = nus * fac_us; 						//需要的节拍数
-    told = SysTick->VAL;        				//刚进入时的计数器值
+    u32 reload = SysTick->LOAD;				         //LOAD的值
+    ticks = nus * fac_us; 						     //需要的节拍数
+    told = SysTick->VAL;        				     //刚进入时的计数器值
     while (1)
     {
         tnow = SysTick->VAL;
         if (tnow != told)
         {
-            if (tnow < told)tcnt += told - tnow;	//这里注意一下SYSTICK是一个递减的计数器就可以了.
-            else tcnt += reload - tnow + told;
+            if (tnow < told)
+                tcnt += told - tnow;	//这里注意一下SYSTICK是一个递减的计数器就可以了.
+            else
+                tcnt += reload - tnow + told;       // ****told********tnow********reload
             told = tnow;
-            if (tcnt >= ticks)break;			//时间超过/等于要延迟的时间,则退出.
+            if (tcnt >= ticks) break;		    	//时间超过/等于要延迟的时间,则退出.
         }
     };
 }
