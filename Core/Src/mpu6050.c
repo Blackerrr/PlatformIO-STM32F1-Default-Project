@@ -1,7 +1,7 @@
 /*
  * @Date         : 2022-01-19 16:28:47
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-01-25 11:42:21
+ * @LastEditTime : 2022-02-22 22:26:48
  * @FilePath     : \LED\Core\Src\mpu6050.c
  * @Github       : https://github.com/Blackerrr
  * @Coding       : utf-8
@@ -9,11 +9,12 @@
 
 #include "mpu6050.h"
 
+Magnetometer mag;
 MPU6050_InitDefine mpu6050 = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 //MPU6050_Original mpu6050_original = {0, 0, 0, 0, 0, 0, 295, -201, -116, 0, 0, 0};
 MPU6050_Original mpu6050_original = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 float q0 = 1, q1 = 0, q2 = 0, q3 = 0;  //
-float exInt = 0, eyInt = 0, ezInt = 0; // 
+float exInt = 0, eyInt = 0, ezInt = 0; //
 unsigned int a_LSB = 16384;            // acceleration least significant bit
 float g_LSB = 32.8;                    // Gyro least significant bit
 
@@ -24,11 +25,11 @@ float g_LSB = 32.8;                    // Gyro least significant bit
  */
 void MPU_IIC_Delay(void)
 {
-    delay_us(2);    
+    delay_us(2);
 }
 
 /**
- * @description: 
+ * @description:
  * @param {*}
  * @return {*}
  */
@@ -225,7 +226,7 @@ u8 MPU_Init(void)
     MPU_Write_Byte(MPU_INT_EN_REG, 0X00);    // turn off all interrupts
     MPU_Write_Byte(MPU_USER_CTRL_REG, 0X00); // I2C master mode off
     MPU_Write_Byte(MPU_FIFO_EN_REG, 0X00);   // turn off FIFO
-    MPU_Write_Byte(MPU_INTBP_CFG_REG, 0X80); // INT pin is active low
+    MPU_Write_Byte(MPU_INTBP_CFG_REG, 0X82); // INT pin is active low and enable bypass mode
 
     // res = MPU_Read_Byte(MPU_DEVICE_ID_REG);
     // if (res == MPU_ADDR) // if Device ID is correct
@@ -237,7 +238,17 @@ u8 MPU_Init(void)
     //    else return 1;
     MPU_Write_Byte(MPU_PWR_MGMT1_REG, 0X01);	//Set CLKSEL and PLL, X axis as reference
     MPU_Write_Byte(MPU_PWR_MGMT2_REG, 0X00);	// Both accelerometer and gyroscope work
-    MPU_Set_Rate(50);						// Set the sample rate to 50Hz
+    MPU_Set_Rate(50);					    	// Set the sample rate to 50Hz
+
+    /***********************AK8963 magnetometer Sensor Initialization*********************/
+
+#if USING_MAGNETOMETER
+    AK8963_Write_Byte(AK8963_Control_1, 0x00);  // Power-down mode
+    HAL_Delay(100);
+    AK8963_Write_Byte(AK8963_Control_1, 0x11);  //  16-bit output and single  measurement mode 1
+    HAL_Delay(100);
+    mag.AK8963_ID = AK8963_Read_Byte(AK8963_WIA);
+#endif
     return 0;
 }
 
@@ -250,7 +261,7 @@ u8 MPU_Init(void)
  */
 u8 MPU_Set_Gyro_Fsr(u8 fsr)
 {
-    return MPU_Write_Byte(MPU_GYRO_CFG_REG, fsr << 3);  
+    return MPU_Write_Byte(MPU_GYRO_CFG_REG, fsr << 3);
 }
 
 // Set the full-scale range of the MPU6050 accelerometer
@@ -259,7 +270,7 @@ u8 MPU_Set_Gyro_Fsr(u8 fsr)
 //           other, Setup failed
 u8 MPU_Set_Accel_Fsr(u8 fsr)
 {
-    return MPU_Write_Byte(MPU_ACCEL_CFG_REG, fsr << 3); 
+    return MPU_Write_Byte(MPU_ACCEL_CFG_REG, fsr << 3);
 }
 
 // Setting up the digital low-pass filter of the MPU6050
@@ -281,7 +292,7 @@ u8 MPU_Set_LPF(u16 lpf)
         data = 5;
     else
         data = 6;
-    return MPU_Write_Byte(MPU_CFG_REG, data); 
+    return MPU_Write_Byte(MPU_CFG_REG, data);
 }
 
 /**
@@ -335,7 +346,6 @@ u8 MPU_Get_Gyroscope()
         mpu6050_original.gz = ((u16)buf[4] << 8) | buf[5];
     }
     return res;
-    ;
 }
 
 /**
@@ -355,7 +365,6 @@ u8 MPU_Get_Accelerometer()
         mpu6050_original.az = ((u16)buf[4] << 8) | buf[5];
     }
     return res;
-    ;
 }
 
 // IIC continuous write
@@ -400,7 +409,7 @@ u8 MPU_Write_Len(u8 addr, u8 reg, u8 len, u8 *buf)
 
 /**
  * @description: IIC continuous read
- * @param {u8} addr  device address 
+ * @param {u8} addr  device address
  * @param {u8} reg   register address to read
  * @param {u8} len   length to read
  * @param {u8} *buf  read data storage area
@@ -484,7 +493,7 @@ u8 MPU_Read_Byte(u8 reg)
     MPU_IIC_Start();
     MPU_IIC_Send_Byte((MPU_ADDR << 1) | 1); // send device address + read command
     MPU_IIC_Wait_Ack();                     // wait response
-    res = MPU_IIC_Read_Byte(0);             // reead data and send ack
+    res = MPU_IIC_Read_Byte(0);             // read data and send ack
     MPU_IIC_Stop();                         // generate a stop condition
     return res;
 }
@@ -503,7 +512,8 @@ u8 MPU_Read_Byte(u8 reg)
 
 float dt_roll = 0.02;  // Note: The value of dt is the sampling time of the kalman filter
 float angle_roll, angle_dot_roll; // angle and Angular velocity
-float P_roll[2][2] = {
+float P_roll[2][2] =
+{
     { 1, 0 },
     { 0, 1 }
 };
@@ -727,8 +737,12 @@ float Kalman_Filter_Yaw(void)
  */
 void MPU_Update(void)
 {
-    MPU_Get_Gyroscope();
-    MPU_Get_Accelerometer();
+    // MPU_Get_Gyroscope();
+    // MPU_Get_Accelerometer();
+
+#if USING_MAGNETOMETER
+    MPU_Get_Magnetometer();
+#endif
 
     mpu6050.Gx = (double)(mpu6050_original.gx + mpu6050_original.gx_e) / g_LSB;
     mpu6050.Gy = (double)(mpu6050_original.gy + mpu6050_original.gy_e) / g_LSB;
@@ -742,3 +756,127 @@ void MPU_Update(void)
     mpu6050.Pitch = Kalman_Filter_Pitch();
     mpu6050.Yaw = Kalman_Filter_Yaw();
 }
+
+
+
+
+/*********************MPU9250 AK8963 magnetometer Sensor****************************/
+u8 MPU_Get_Magnetometer(void)
+{
+    u8 x_axis, y_axis, z_axis;
+    u8 buf[6];
+    static u8 count = 0;
+
+    // x_axis = AK8963_Read_Byte(AK8963_ASAX_REG); // X轴灵敏度调整值
+    // y_axis = AK8963_Read_Byte(AK8963_ASAY_REG);
+    // z_axis = AK8963_Read_Byte(AK8963_ASAZ_REG);
+
+    if (++count == 20)
+    {
+        count = 0;
+        MPU_Read_Len(AK8963_ADDR, AK8963_Mag_XOUTL_REG, 6, buf);
+        // // mag.mz = AK8963_Read_Byte(AK8963_Mag_ZOUTL_REG);
+        mag.mx = (buf[1] << 8) | buf[0];
+        // HAL_Delay(5);
+
+        // MPU_Read_Len(AK8963_ADDR, AK8963_Mag_YOUTL_REG, 2, buf + 2);
+        mag.my = (buf[3] << 8) | buf[2];
+        // HAL_Delay(5);
+
+        // MPU_Read_Len(AK8963_ADDR, AK8963_Mag_ZOUTL_REG, 2, buf + 4);
+        mag.mz = (buf[5] << 8) | buf[4];
+
+        AK8963_Write_Byte(AK8963_Control_1, 0x11);  //  16-bit output and single  measurement mode 1
+    }
+
+    // // if ((AK8963_Read_Byte(AK8963_ST1_REG))) //data ready
+    // if (++count == 2)
+    // {
+    //     // count = 0;
+    //     //读取计算X轴数据
+    //     buf[0] = AK8963_Read_Byte(AK8963_Mag_XOUTL_REG); //Low data
+    //     if ((AK8963_Read_Byte(AK8963_ST2_REG) & 0x08) == 1) // data reading end register & check Magnetic sensor overflow occurred
+    //     {
+    //         buf[0] = AK8963_Read_Byte(AK8963_Mag_XOUTL_REG); //reload data
+    //     }
+    //     buf[1] = AK8963_Read_Byte(AK8963_Mag_XOUTH_REG); //Low data
+    //     if ((AK8963_Read_Byte(AK8963_ST2_REG) & 0x08) == 1) // data reading end register & check Magnetic sensor overflow occurred
+    //     {
+    //         buf[1] = AK8963_Read_Byte(AK8963_Mag_XOUTH_REG); //reload data
+    //     }
+    //     // mag.mx = ((buf[1] << 8) | buf[0]) * (((x_axis - 128) >> 8) + 1);		//灵敏度纠正 公式见/RM-MPU-9250A-00 PDF/ 5.13
+    //     mag.mx = (buf[1] << 8) | buf[0];
+
+    //     //读取计算Y轴数据
+    //     buf[2] = AK8963_Read_Byte(AK8963_Mag_YOUTL_REG); //Low data
+    //     if ((AK8963_Read_Byte(AK8963_ST2_REG) & 0x08) == 1) // data reading end register
+    //     {
+    //         buf[2] = AK8963_Read_Byte(AK8963_Mag_YOUTL_REG);
+    //     }
+    //     buf[3] = AK8963_Read_Byte(AK8963_Mag_YOUTH_REG); //High data
+    //     if ((AK8963_Read_Byte(AK8963_ST2_REG) & 0x08) == 1) // data reading end register
+    //     {
+    //         buf[3] = AK8963_Read_Byte(AK8963_Mag_YOUTH_REG);
+    //     }
+    //     // mag.my = ((buf[3] << 8) | buf[2]) * (((y_axis - 128) >> 8) + 1);
+    //     mag.my = (buf[3] << 8) | buf[2];
+
+    //     //读取计算Z轴数据
+    //     buf[4] = AK8963_Read_Byte(AK8963_Mag_ZOUTL_REG); //Low data
+    //     if ((AK8963_Read_Byte(AK8963_ST2_REG) & 0x08) == 1) // data reading end register
+    //     {
+    //         buf[4] = AK8963_Read_Byte(AK8963_Mag_ZOUTL_REG);
+    //     }
+    //     buf[5] = AK8963_Read_Byte(AK8963_Mag_ZOUTH_REG); //High data
+    //     if ((AK8963_Read_Byte(AK8963_ST2_REG) & 0x08) == 1) // data reading end register
+    //     {
+    //         buf[5] = AK8963_Read_Byte(AK8963_Mag_ZOUTH_REG);
+    //     }
+    //     // mag.mz = ((buf[5] << 8) | buf[4]) * (((z_axis - 128) >> 8) + 1);
+    //     mag.mz = (buf[5] << 8) | buf[4];
+    //     // AK8963_Write_Byte(AK8963_Control_1, 0x11);  //  16-bit output and continuous measurement mode 1
+    // }
+    return 0;
+
+}
+
+
+u8 AK8963_Write_Byte(u8 reg, u8 data)
+{
+    MPU_IIC_Start();
+    MPU_IIC_Send_Byte((AK8963_ADDR << 1) | 0);
+    if (MPU_IIC_Wait_Ack())                 // wait response
+    {
+        MPU_IIC_Stop();
+        return 1;
+    }
+    MPU_IIC_Send_Byte(reg);  // register address to write
+    MPU_IIC_Wait_Ack();      // wait response
+    MPU_IIC_Send_Byte(data); // send data
+    if (MPU_IIC_Wait_Ack())  // wait response
+    {
+        MPU_IIC_Stop();
+        return 1;
+    }
+    MPU_IIC_Stop();
+    return 0;
+}
+
+u8 AK8963_Read_Byte(u8 reg)
+{
+    u8 res;
+    MPU_IIC_Start();
+    MPU_IIC_Send_Byte((AK8963_ADDR << 1) | 0); // send device address + write command
+    MPU_IIC_Wait_Ack();                     // wait response
+    MPU_IIC_Send_Byte(reg);                 // register address to write
+    MPU_IIC_Wait_Ack();                     // wait response
+    MPU_IIC_Start();
+    MPU_IIC_Send_Byte((AK8963_ADDR << 1) | 1); // send device address + read command
+    MPU_IIC_Wait_Ack();                     // wait response
+    res = MPU_IIC_Read_Byte(0);             // read data and send ack
+    MPU_IIC_Stop();                         // generate a stop condition
+    return res;
+}
+
+
+// 版本回退练习

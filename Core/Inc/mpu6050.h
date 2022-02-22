@@ -1,7 +1,7 @@
 /*
  * @Date         : 2022-01-19 16:29:37
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-01-24 22:29:29
+ * @LastEditTime : 2022-02-22 22:16:23
  * @FilePath     : \LED\Core\Inc\mpu6050.h
  * @Github       : https://github.com/Blackerrr
  * @Coding       : utf-8
@@ -41,8 +41,6 @@ u8 MPU_IIC_Wait_Ack(void);               // IIC waits for ACK signal
 void MPU_IIC_Ack(void);                  // IIC sends ACK signal
 void MPU_IIC_NAck(void);                 // IIC does not send ACK signal
 
-void IMPU_IC_Write_One_Byte(u8 daddr, u8 addr, u8 data);
-u8 MPU_IIC_Read_One_Byte(u8 daddr, u8 addr);
 
 /********************************* MPU6050 ***************************************/
 
@@ -122,10 +120,29 @@ u8 MPU_IIC_Read_One_Byte(u8 daddr, u8 addr);
 // If connected to V3.3, the IIC address is 0X69 (not including the lowest bit).
 #define MPU_ADDR 0X68
 
-// Because the module AD0 is connected to GND by default, it is 0XD1 and 0XD0 
+// Because the module AD0 is connected to GND by default, it is 0XD1 and 0XD0
 // if it is connected to VCC, it is 0XD3 and 0XD2) after switching to the read-write address.
 // #define MPU_READ    0XD1
 // #define MPU_WRITE   0XD0
+
+
+
+// MPU9250 AK8963 registers
+#define AK8963_ADDR           0x0C
+#define AK8963_Device_ID      0x48   //   this is not a register
+#define AK8963_WIA            0x00
+#define AK8963_Mag_XOUTH_REG  0x04
+#define AK8963_Mag_XOUTL_REG  0x03
+#define AK8963_Mag_YOUTH_REG  0x06
+#define AK8963_Mag_YOUTL_REG  0x05
+#define AK8963_Mag_ZOUTH_REG  0x08
+#define AK8963_Mag_ZOUTL_REG  0x07
+#define AK8963_Control_1      0x0A
+#define AK8963_ST1_REG        0x02
+#define AK8963_ST2_REG        0x09
+#define AK8963_ASAX_REG       0x10
+#define AK8963_ASAY_REG       0x11
+#define AK8963_ASAZ_REG       0x12
 
 
 
@@ -164,10 +181,10 @@ typedef struct
 
 extern MPU6050_InitDefine mpu6050;
 extern MPU6050_Original mpu6050_original;
-extern float q0, q1, q2, q3;      //��Ԫ��
-extern float exInt, eyInt, ezInt; //������������ۼƻ���
-extern unsigned int a_LSB;        //aԭʼֵϵ��
-extern float g_LSB;               //gԭʼֵϵ��
+extern float q0, q1, q2, q3;      //
+extern float exInt, eyInt, ezInt; //
+extern unsigned int a_LSB;        //
+extern float g_LSB;               //
 
 u8 MPU_Init(void);                                  // Initialize MPU6050
 u8 MPU_Write_Len(u8 addr, u8 reg, u8 len, u8 *buf); // IIC continuous write
@@ -190,5 +207,22 @@ void MPU_Update(void);
 float Kalman_Filter_Roll(void);
 float Kalman_Filter_Pitch(void);
 float Kalman_Filter_Yaw(void);
+
+
+/*************************MPU9250 AK8963 Magnetometer Sensor******************************/
+#define USING_MAGNETOMETER 1
+typedef struct
+{
+    u8 AK8963_ID;
+    int16_t mx;
+    int16_t my;
+    int16_t mz;
+} Magnetometer;
+extern Magnetometer mag;
+u8 MPU_Get_Magnetometer(void);
+u8 AK8963_Write_Byte(u8 reg, u8 data);
+u8 AK8963_Read_Byte(u8 reg);
+
+
 
 #endif

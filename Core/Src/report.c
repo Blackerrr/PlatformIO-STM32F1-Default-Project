@@ -1,7 +1,7 @@
 /*
  * @Date         : 2022-01-24 19:51:02
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-01-25 11:27:28
+ * @LastEditTime : 2022-01-29 13:23:05
  * @brief        : 向匿名地面站发送自定义数据, 发送的是不定长数据
  * @FilePath     : \LED\Core\Src\report.c
  * @Github       : https://github.com/Blackerrr
@@ -156,11 +156,11 @@ void ANO_DT_UserData_Report(void)
 {
     uint8_t channel_number = 0;
     /*****************************生成通道数据************************************/
-    DataScope_Get_Channel_Data(1, 1, 1);
-    DataScope_Get_Channel_Data(2, 2, 1);
-    DataScope_Get_Channel_Data(3, 3, 1);
-    DataScope_Get_Channel_Data(4, 4, 1);
-    DataScope_Get_Channel_Data(5, 5, 1);
+    DataScope_Get_Channel_Data(mag.AK8963_ID, 1, 1);
+    DataScope_Get_Channel_Data(10, 2, 1);
+    DataScope_Get_Channel_Data(0, 3, 1);
+    DataScope_Get_Channel_Data(0, 4, 1);
+    DataScope_Get_Channel_Data(0, 5, 1);
     DataScope_Get_Channel_Data(0, 6, 1);
     DataScope_Get_Channel_Data(0, 7, 1);
     DataScope_Get_Channel_Data(0, 8, 1);
@@ -170,13 +170,14 @@ void ANO_DT_UserData_Report(void)
     DataScope_Get_Channel_Data(0, 12, 1);
     DataScope_Get_Channel_Data(0, 13, 1);
     DataScope_Get_Channel_Data(0, 14, 1);
+    
     DataScope_Get_Channel_Data(0, 15, 1);
     DataScope_Get_Channel_Data(0, 16, 1);
     DataScope_Get_Channel_Data(0, 17, 1);
     DataScope_Get_Channel_Data(0, 18, 1);
     DataScope_Get_Channel_Data(0, 19, 1);
     DataScope_Get_Channel_Data(0, 20, 1);
-    channel_number = 5;
+    channel_number = 2;
 
     Usart_Send_Data(0xF1, DataScope_OutPut_Buffer + 1, channel_number * 4);
 }
@@ -212,13 +213,13 @@ void ANO_DT_Send_Senser(void)
     DataScope_OutPut_Buffer[_cnt++] = BYTE0(_temp);
 
     /*****************磁力计*********************/
-    _temp = 0;
+    _temp = mag.mx;
     DataScope_OutPut_Buffer[_cnt++] = BYTE1(_temp);
     DataScope_OutPut_Buffer[_cnt++] = BYTE0(_temp);
-    _temp = 0;
+    _temp = mag.my;
     DataScope_OutPut_Buffer[_cnt++] = BYTE1(_temp);
     DataScope_OutPut_Buffer[_cnt++] = BYTE0(_temp);
-    _temp = 0;
+    _temp = mag.mz;
     DataScope_OutPut_Buffer[_cnt++] = BYTE1(_temp);
     DataScope_OutPut_Buffer[_cnt++] = BYTE0(_temp);
 
