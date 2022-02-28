@@ -1,7 +1,7 @@
 /*
  * @Date         : 2022-01-19 16:28:47
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-02-22 22:26:48
+ * @LastEditTime : 2022-02-28 16:04:33
  * @FilePath     : \LED\Core\Src\mpu6050.c
  * @Github       : https://github.com/Blackerrr
  * @Coding       : utf-8
@@ -878,5 +878,3 @@ u8 AK8963_Read_Byte(u8 reg)
     return res;
 }
 
-
-// 版本回退练习
