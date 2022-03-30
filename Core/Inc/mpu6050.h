@@ -1,7 +1,7 @@
 /*
  * @Date         : 2022-01-19 16:29:37
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-02-22 22:16:23
+ * @LastEditTime : 2022-03-30 21:34:21
  * @FilePath     : \LED\Core\Inc\mpu6050.h
  * @Github       : https://github.com/Blackerrr
  * @Coding       : utf-8

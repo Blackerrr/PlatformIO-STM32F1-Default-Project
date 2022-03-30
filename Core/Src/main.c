@@ -102,12 +102,13 @@ int main(void)
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
-        HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
-        HAL_Delay(1000);
+        // HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 0);
+        // HAL_Delay(1000);
+        // // delay_ms(1000);
+        // HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
         // delay_ms(1000);
-        HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, 1);
-        delay_ms(1000);
-
+        MPU_Get_Magnetometer();
+        HAL_Delay(50);
 
 
     }
