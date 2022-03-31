@@ -1,7 +1,7 @@
 /*
  * @Date         : 2022-01-19 16:28:47
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-03-30 22:47:32
+ * @LastEditTime : 2022-03-31 20:10:21
  * @FilePath     : \LED\Core\Src\mpu6050.c
  * @Github       : https://github.com/Blackerrr
  * @Coding       : utf-8
@@ -18,6 +18,8 @@ float exInt = 0, eyInt = 0, ezInt = 0; //
 unsigned int a_LSB = 16384;            // acceleration least significant bit
 float g_LSB = 32.8;                    // Gyro least significant bit
 
+uint8_t MPU6050_ID;
+
 /**
  * @description: MPU IIC delay function
  * @param {*}
@@ -25,7 +27,7 @@ float g_LSB = 32.8;                    // Gyro least significant bit
  */
 void MPU_IIC_Delay(void)
 {
-    delay_us(5);
+    delay_us(2);
 }
 
 /**
@@ -40,7 +42,7 @@ void MPU_IIC_Init(void)
     __HAL_RCC_GPIOC_CLK_ENABLE();
 
     GPIO_Initure.Pin = GPIO_PIN_0 | GPIO_PIN_1;
-    GPIO_Initure.Mode = GPIO_MODE_OUTPUT_OD;
+    GPIO_Initure.Mode = GPIO_MODE_OUTPUT_OD;    // 开漏输出模式
     GPIO_Initure.Pull = GPIO_PULLUP;
     GPIO_Initure.Speed = GPIO_SPEED_FREQ_HIGH;
 
@@ -62,9 +64,14 @@ void MPU_IIC_Start(void)
     MPU_IIC_SDA = 1;
     MPU_IIC_SCL = 1;
     MPU_IIC_Delay();
+    MPU_IIC_Delay();
     MPU_IIC_SDA = 0;    // START:when CLK is high,DATA change form high to low
     MPU_IIC_Delay();
+    MPU_IIC_Delay();
     MPU_IIC_SCL = 0;    // Clamp the I2C bus, ready to send or receive data
+    MPU_IIC_Delay();
+    MPU_IIC_Delay();
+
 }
 
 /**
@@ -78,8 +85,10 @@ void MPU_IIC_Stop(void)
     MPU_IIC_SCL = 0;
     MPU_IIC_SDA = 0;  //STOP:when CLK is high DATA change form low to high
     MPU_IIC_Delay();
+    MPU_IIC_Delay();
     MPU_IIC_SCL = 1;
     MPU_IIC_SDA = 1;  // Send I2C bus end signal
+    MPU_IIC_Delay();
     MPU_IIC_Delay();
 }
 
@@ -198,24 +207,6 @@ u8 MPU_IIC_Read_Byte(unsigned char ack)
  */
 u8 MPU_Init(void)
 {
-    // u8 res;
-
-    // GPIO_InitTypeDef GPIO_Initure;
-
-    // __HAL_RCC_GPIOA_CLK_ENABLE(); // Enable GPIOA clock
-
-    // GPIO_Initure.Pin = GPIO_PIN_15;            //PA15
-    // GPIO_Initure.Mode = GPIO_MODE_OUTPUT_PP;   // Push-pull output
-    // GPIO_Initure.Pull = GPIO_PULLUP;           // pull up
-    // GPIO_Initure.Speed = GPIO_SPEED_FREQ_HIGH; // high speed
-    // HAL_GPIO_Init(GPIOA, &GPIO_Initure);
-
-    // __HAL_AFIO_REMAP_SWJ_DISABLE();
-    // // JTAG is prohibited, so that PA15 can be used as normal IO, otherwise PA15 cannot be used as normal IO!!!
-    // __HAL_AFIO_REMAP_SWJ_DISABLE();
-
-    // MPU_AD0_CTRL = 0; // AD0 pin is low level, the slave address is: 0X68
-
     MPU_IIC_Init();                          // initialize mpuiic
     MPU_Write_Byte(MPU_PWR_MGMT1_REG, 0X80); // reset mpu6050
     HAL_Delay(100);
@@ -224,18 +215,12 @@ u8 MPU_Init(void)
     MPU_Set_Accel_Fsr(0);                    // Accelerometer, ±2g
     MPU_Set_Rate(50);                        // Set the sample rate to 50Hz
     MPU_Write_Byte(MPU_INT_EN_REG, 0X00);    // turn off all interrupts
-    MPU_Write_Byte(MPU_USER_CTRL_REG, 0X00); // I2C master mode off
+    // MPU_Write_Byte(MPU_USER_CTRL_REG, 0X00); // I2C master mode off
     MPU_Write_Byte(MPU_FIFO_EN_REG, 0X00);   // turn off FIFO
     // MPU_Write_Byte(MPU_INTBP_CFG_REG, 0X82); // INT pin is active low and enable bypass mode
 
-    // res = MPU_Read_Byte(MPU_DEVICE_ID_REG);
-    // if (res == MPU_ADDR) // if Device ID is correct
-    // {
-    //     MPU_Write_Byte(MPU_PWR_MGMT1_REG, 0X01);	//Set CLKSEL and PLL, X axis as reference
-    //     MPU_Write_Byte(MPU_PWR_MGMT2_REG, 0X00);	// Both accelerometer and gyroscope work
-    //     MPU_Set_Rate(50);						// Set the sample rate to 50Hz
-    // }
-    //    else return 1;
+    MPU6050_ID = MPU_Read_Byte(MPU_DEVICE_ID_REG);    // MPU9250读出来是 0x70
+
     MPU_Write_Byte(MPU_PWR_MGMT1_REG, 0X01);	//Set CLKSEL and PLL, X axis as reference
     MPU_Write_Byte(MPU_PWR_MGMT2_REG, 0X00);	// Both accelerometer and gyroscope work
     MPU_Set_Rate(50);					    	// Set the sample rate to 50Hz
@@ -243,12 +228,32 @@ u8 MPU_Init(void)
     /***********************AK8963 magnetometer Sensor Initialization*********************/
 
 #if USING_MAGNETOMETER
-    AK8963_Write_Byte(AK8963_Control_1, 0x00);  // Power-down mode
-    HAL_Delay(100);
-    AK8963_Write_Byte(AK8963_Control_1, 0x11);  //  16-bit output and single  measurement mode 1
-    HAL_Delay(100);
+    /*使用bypass mode数据读不出来*/
     MPU_Write_Byte(MPU_INTBP_CFG_REG, 0X02); //  enable bypass mode
+    AK8963_Write_Byte(AK8963_Control_2, 0x01);  //  reset
+    HAL_Delay(50);
+    AK8963_Write_Byte(AK8963_Control_1, 0x11);  //  16-bit output and single  measurement mode 1
     mag.AK8963_ID = AK8963_Read_Byte(AK8963_WIA);
+
+    /* i2c master mode*/
+    // 先读取 磁力计 ID
+
+    // MPU_Write_Byte(MPU_USER_CTRL_REG, 0X00);      // I2C master mode disable
+    // MPU_Write_Byte(MPU_INTBP_CFG_REG, 0X02);      //  enable bypass mode
+    // AK8963_Write_Byte(AK8963_Control_2, 0x01);    //  reset
+    // HAL_Delay(50);
+    // AK8963_Write_Byte(AK8963_Control_1, 0x16);    //  16-bit output and continue  measurement mode 2
+    // HAL_Delay(50);
+    // MPU_Write_Byte(MPU_INTBP_CFG_REG, 0X00);      //  disable bypass mode
+
+    // MPU_Write_Byte(MPU_I2CSLV0_ADDR_REG, 0x8c);   // tranfer is read + 0x0C
+    // MPU_Write_Byte(MPU_I2CSLV0_CTRL_REG, 0x81);   // data_length = 6
+    // MPU_Write_Byte(MPU_USER_CTRL_REG, 0X20);      // I2C master mode enable
+    // HAL_Delay(50);
+    // mag.AK8963_ID = MPU_Read_Byte(EXT_SENS_DATA_00);
+
+    // MPU_Write_Byte(MPU_I2CSLV0_CTRL_REG, 0x86);   // data_length = 6
+    // MPU_Write_Byte(MPU_I2CSLV0_REG, AK8963_Mag_XOUTL_REG);   // 读数据起始地址
 #endif
     return 0;
 }
@@ -742,7 +747,7 @@ void MPU_Update(void)
     MPU_Get_Accelerometer();
 
 #if USING_MAGNETOMETER
-    // MPU_Get_Magnetometer();
+    MPU_Get_Magnetometer();
 #endif
 
     mpu6050.Gx = (double)(mpu6050_original.gx + mpu6050_original.gx_e) / g_LSB;
@@ -764,84 +769,13 @@ void MPU_Update(void)
 /*********************MPU9250 AK8963 magnetometer Sensor****************************/
 u8 MPU_Get_Magnetometer(void)
 {
-    u8 x_axis, y_axis, z_axis;
     u8 buf[6];
-    static u8 count = 0;
-
-    // x_axis = AK8963_Read_Byte(AK8963_ASAX_REG); // X轴灵敏度调整值
-    // y_axis = AK8963_Read_Byte(AK8963_ASAY_REG);
-    // z_axis = AK8963_Read_Byte(AK8963_ASAZ_REG);
-
-    // if (++count == 20)
-    //  {
-    // count = 0;
-    // MPU_Read_Len(AK8963_ADDR, AK8963_Mag_XOUTL_REG, 2, buf);
-    // // // mag.mz = AK8963_Read_Byte(AK8963_Mag_ZOUTL_REG);
-    // mag.mx = (buf[1] << 8) | buf[0];
-    // HAL_Delay(5);
-
-    // MPU_Read_Len(AK8963_ADDR, AK8963_Mag_YOUTL_REG, 2, buf + 2);
-    // mag.my = (buf[3] << 8) | buf[2];
-    // HAL_Delay(5);
-
-    // MPU_Read_Len(AK8963_ADDR, AK8963_Mag_ZOUTL_REG, 2, buf + 4);
-    // mag.mz = (buf[5] << 8) | buf[4];
-
-    // AK8963_Write_Byte(AK8963_Control_1, 0x11);  //  16-bit output and single  measurement mode 1
-    //  }
-
-    // if ((AK8963_Read_Byte(AK8963_ST1_REG))) //data ready
-    // if (++count == 2)
-    // {
-    // count = 0;
-    //读取计算X轴数据
-    buf[0] = AK8963_Read_Byte(AK8963_Mag_XOUTL_REG);     //Low data
-    if ((AK8963_Read_Byte(AK8963_ST2_REG) & 0x08) == 1)  // data reading end register & check Magnetic sensor overflow occurred
-    {
-        buf[0] = AK8963_Read_Byte(AK8963_Mag_XOUTL_REG); //reload data
-    }
-    buf[1] = AK8963_Read_Byte(AK8963_Mag_XOUTH_REG);     //Low data
-    if ((AK8963_Read_Byte(AK8963_ST2_REG) & 0x08) == 1)  // data reading end register & check Magnetic sensor overflow occurred
-    {
-        buf[1] = AK8963_Read_Byte(AK8963_Mag_XOUTH_REG); //reload data
-    }
-    // mag.mx = ((buf[1] << 8) | buf[0]) * (((x_axis - 128) >> 8) + 1);		//灵敏度纠正 公式见/RM-MPU-9250A-00 PDF/ 5.13
-    mag.mx = (buf[1] << 8) | buf[0];
-
-    HAL_Delay(5);
-
-    //读取计算Y轴数据
-    buf[2] = AK8963_Read_Byte(AK8963_Mag_YOUTL_REG); //Low data
-    if ((AK8963_Read_Byte(AK8963_ST2_REG) & 0x08) == 1) // data reading end register
-    {
-        buf[2] = AK8963_Read_Byte(AK8963_Mag_YOUTL_REG);
-    }
-    buf[3] = AK8963_Read_Byte(AK8963_Mag_YOUTH_REG); //High data
-    if ((AK8963_Read_Byte(AK8963_ST2_REG) & 0x08) == 1) // data reading end register
-    {
-        buf[3] = AK8963_Read_Byte(AK8963_Mag_YOUTH_REG);
-    }
-    // mag.my = ((buf[3] << 8) | buf[2]) * (((y_axis - 128) >> 8) + 1);
-    mag.my = (buf[3] << 8) | buf[2];
-
-    HAL_Delay(5);
-
-    //读取计算Z轴数据
-    buf[4] = AK8963_Read_Byte(AK8963_Mag_ZOUTL_REG); //Low data
-    if ((AK8963_Read_Byte(AK8963_ST2_REG) & 0x08) == 1) // data reading end register
-    {
-        buf[4] = AK8963_Read_Byte(AK8963_Mag_ZOUTL_REG);
-    }
-    buf[5] = AK8963_Read_Byte(AK8963_Mag_ZOUTH_REG); //High data
-    if ((AK8963_Read_Byte(AK8963_ST2_REG) & 0x08) == 1) // data reading end register
-    {
-        buf[5] = AK8963_Read_Byte(AK8963_Mag_ZOUTH_REG);
-    }
-    // mag.mz = ((buf[5] << 8) | buf[4]) * (((z_axis - 128) >> 8) + 1);
-    mag.mz = (buf[5] << 8) | buf[4];
-    AK8963_Write_Byte(AK8963_Control_1, 0x11);  //  16-bit output and continuous measurement mode 1
-    //  }
-    return 0;
+    AK8963_Write_Byte(AK8963_Control_1, 0x11);  //  16-bit output and single  measurement mode 1
+    delay_us(50);
+    MPU_Read_Len(AK8963_ADDR, AK8963_Mag_XOUTL_REG, 6, buf);
+    mag.mx = buf[1] << 8 | buf[0];
+    mag.my = buf[3] << 8 | buf[2];
+    mag.mz = buf[5] << 8 | buf[4];
 
 }
 

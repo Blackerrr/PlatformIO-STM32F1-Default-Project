@@ -231,7 +231,7 @@ void TIM6_IRQHandler(void)
     /* USER CODE BEGIN TIM6_IRQn 1 */
     if(++cnt == 4)
     {
-        MPU_Update();
+        // MPU_Update();
         ANO_DT_UserData_Report();
         ANO_DT_Send_Senser();
         cnt = 0;

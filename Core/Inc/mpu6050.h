@@ -1,7 +1,7 @@
 /*
  * @Date         : 2022-01-19 16:29:37
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-03-30 21:34:21
+ * @LastEditTime : 2022-03-31 19:36:11
  * @FilePath     : \LED\Core\Inc\mpu6050.h
  * @Github       : https://github.com/Blackerrr
  * @Coding       : utf-8
@@ -54,6 +54,7 @@ void MPU_IIC_NAck(void);                 // IIC does not send ACK signal
 #define MPU_SELF_TESTZ_REG 0X0F   // Self-Test Register Z
 #define MPU_SELF_TESTA_REG 0X10   // Self-Test Register A
 #define MPU_SAMPLE_RATE_REG 0X19  // Sampling frequency divider
+
 #define MPU_CFG_REG 0X1A          // configuration register
 #define MPU_GYRO_CFG_REG 0X1B     // Gyroscope Configuration Register
 #define MPU_ACCEL_CFG_REG 0X1C    // Accelerometer Configuration Register
@@ -114,11 +115,41 @@ void MPU_IIC_NAck(void);                 // IIC does not send ACK signal
 #define MPU_FIFO_CNTH_REG 0X72    // FIFO count register upper eight bits
 #define MPU_FIFO_CNTL_REG 0X73    // FIFO count register lower eight bits
 #define MPU_FIFO_RW_REG 0X74      // FIFO read and write registers
-#define MPU_DEVICE_ID_REG 0X75    // Device ID Register
+#define MPU_DEVICE_ID_REG 0X75    // Device ID Register    WHO AM I
+
+
+#define EXT_SENS_DATA_00     0x49
+#define EXT_SENS_DATA_01     0x4A
+#define EXT_SENS_DATA_02     0x4B
+#define EXT_SENS_DATA_03     0x4C
+#define EXT_SENS_DATA_04     0x4D
+#define EXT_SENS_DATA_05     0x4E
+#define EXT_SENS_DATA_06     0x4F
+#define EXT_SENS_DATA_07     0x50
+#define EXT_SENS_DATA_08     0x51
+#define EXT_SENS_DATA_09     0x52
+
+#define EXT_SENS_DATA_10     0x53
+#define EXT_SENS_DATA_11     0x54
+#define EXT_SENS_DATA_12     0x55
+#define EXT_SENS_DATA_13     0x56
+#define EXT_SENS_DATA_14     0x57
+#define EXT_SENS_DATA_15     0x58
+#define EXT_SENS_DATA_16     0x59
+#define EXT_SENS_DATA_17     0x5A
+#define EXT_SENS_DATA_18     0x5B
+#define EXT_SENS_DATA_19     0x5C
+
+#define EXT_SENS_DATA_20     0x5D
+#define EXT_SENS_DATA_21     0x5E
+#define EXT_SENS_DATA_22     0x5F
+#define EXT_SENS_DATA_23     0x60
+
+
 
 // If the AD0 pin (9 pin) is grounded, the IIC address is 0X68 (does not include the lowest(least) bit).
 // If connected to V3.3, the IIC address is 0X69 (not including the lowest bit).
-#define MPU_ADDR 0X68
+#define MPU_ADDR 0X68    // mpu6050  
 
 // Because the module AD0 is connected to GND by default, it is 0XD1 and 0XD0
 // if it is connected to VCC, it is 0XD3 and 0XD2) after switching to the read-write address.
@@ -138,6 +169,7 @@ void MPU_IIC_NAck(void);                 // IIC does not send ACK signal
 #define AK8963_Mag_ZOUTH_REG  0x08
 #define AK8963_Mag_ZOUTL_REG  0x07
 #define AK8963_Control_1      0x0A
+#define AK8963_Control_2      0x0B
 #define AK8963_ST1_REG        0x02
 #define AK8963_ST2_REG        0x09
 #define AK8963_ASAX_REG       0x10
@@ -185,6 +217,7 @@ extern float q0, q1, q2, q3;      //
 extern float exInt, eyInt, ezInt; //
 extern unsigned int a_LSB;        //
 extern float g_LSB;               //
+extern uint8_t MPU6050_ID;
 
 u8 MPU_Init(void);                                  // Initialize MPU6050
 u8 MPU_Write_Len(u8 addr, u8 reg, u8 len, u8 *buf); // IIC continuous write
