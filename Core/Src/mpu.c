@@ -1,14 +1,15 @@
 /*
  * @Date         : 2022-01-19 16:28:47
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-03-31 20:10:21
- * @FilePath     : \LED\Core\Src\mpu6050.c
+ * @LastEditTime : 2022-04-01 21:46:16
+ * @FilePath     : \LED\Core\Src\mpu.c
  * @Github       : https://github.com/Blackerrr
  * @Coding       : utf-8
  */
 
-#include "mpu6050.h"
+#include "mpu.h"
 
+MPU_Status mpu_status; 
 Magnetometer mag;
 MPU6050_InitDefine mpu6050 = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 //MPU6050_Original mpu6050_original = {0, 0, 0, 0, 0, 0, 295, -201, -116, 0, 0, 0};
@@ -18,187 +19,6 @@ float exInt = 0, eyInt = 0, ezInt = 0; //
 unsigned int a_LSB = 16384;            // acceleration least significant bit
 float g_LSB = 32.8;                    // Gyro least significant bit
 
-uint8_t MPU6050_ID;
-
-/**
- * @description: MPU IIC delay function
- * @param {*}
- * @return {*}
- */
-void MPU_IIC_Delay(void)
-{
-    delay_us(2);
-}
-
-/**
- * @description:
- * @param {*}
- * @return {*}
- */
-void MPU_IIC_Init(void)
-{
-    GPIO_InitTypeDef GPIO_Initure;
-
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-
-    GPIO_Initure.Pin = GPIO_PIN_0 | GPIO_PIN_1;
-    GPIO_Initure.Mode = GPIO_MODE_OUTPUT_OD;    // 开漏输出模式
-    GPIO_Initure.Pull = GPIO_PULLUP;
-    GPIO_Initure.Speed = GPIO_SPEED_FREQ_HIGH;
-
-    HAL_GPIO_Init(GPIOC, &GPIO_Initure);
-
-    MPU_IIC_SCL = 1;
-    MPU_IIC_SDA = 1;
-}
-
-
-/**
- * @description:  Send IIC start signal
- * @param {*}
- * @return {*}
- */
-void MPU_IIC_Start(void)
-{
-    MPU_SDA_OUT();
-    MPU_IIC_SDA = 1;
-    MPU_IIC_SCL = 1;
-    MPU_IIC_Delay();
-    MPU_IIC_Delay();
-    MPU_IIC_SDA = 0;    // START:when CLK is high,DATA change form high to low
-    MPU_IIC_Delay();
-    MPU_IIC_Delay();
-    MPU_IIC_SCL = 0;    // Clamp the I2C bus, ready to send or receive data
-    MPU_IIC_Delay();
-    MPU_IIC_Delay();
-
-}
-
-/**
- * @description: send iic stop signal
- * @param {*}
- * @return {*}
- */
-void MPU_IIC_Stop(void)
-{
-    MPU_SDA_OUT();
-    MPU_IIC_SCL = 0;
-    MPU_IIC_SDA = 0;  //STOP:when CLK is high DATA change form low to high
-    MPU_IIC_Delay();
-    MPU_IIC_Delay();
-    MPU_IIC_SCL = 1;
-    MPU_IIC_SDA = 1;  // Send I2C bus end signal
-    MPU_IIC_Delay();
-    MPU_IIC_Delay();
-}
-
-// Wait for the answer signal to arrive
-// Return value: 1, fail
-//               0, success
-/**
- * @description: 等待应答信号到来， Return value: 1, fail，0, success
- * @param {*}
- * @return {*} Return value: 1, fail，0, success
- */
-u8 MPU_IIC_Wait_Ack(void)
-{
-    u8 ucErrTime = 0;
-    MPU_SDA_IN();
-    MPU_IIC_SDA = 1;
-    MPU_IIC_Delay();
-    MPU_IIC_SCL = 1;
-    MPU_IIC_Delay();
-    while (MPU_READ_SDA)
-    {
-        ucErrTime++;
-        if (ucErrTime > 250)
-        {
-            MPU_IIC_Stop();
-            return 1;
-        }
-    }
-    MPU_IIC_SCL = 0; // clock out 0
-    return 0;
-}
-
-/**
- * @description: generate ACK response
- * @param {*}
- * @return {*}
- */
-void MPU_IIC_Ack(void)
-{
-    MPU_IIC_SCL = 0;
-    MPU_SDA_OUT();
-    MPU_IIC_SDA = 0;
-    MPU_IIC_Delay();
-    MPU_IIC_SCL = 1;
-    MPU_IIC_Delay();
-    MPU_IIC_SCL = 0;
-}
-
-/**
- * @description: No ACK response is generated
- * @param {*}
- * @return {*}
- */
-void MPU_IIC_NAck(void)
-{
-    MPU_IIC_SCL = 0;
-    MPU_SDA_OUT();
-    MPU_IIC_SDA = 1;
-    MPU_IIC_Delay();
-    MPU_IIC_SCL = 1;
-    MPU_IIC_Delay();
-    MPU_IIC_SCL = 0;
-}
-
-/**
- * @description: IIC发送一个字节，返回从机有无应答，1，有应答，0，无应答
- * @param {u8} txd
- * @return {*}
- */
-void MPU_IIC_Send_Byte(u8 txd)
-{
-    u8 t;
-    MPU_SDA_OUT();
-    MPU_IIC_SCL = 0;   // Pull the clock low to start data transfer
-    for (t = 0; t < 8; t++)
-    {
-        MPU_IIC_SDA = (txd & 0x80) >> 7;
-        txd <<= 1;
-        MPU_IIC_SCL = 1;
-        MPU_IIC_Delay();
-        MPU_IIC_SCL = 0;
-        MPU_IIC_Delay();
-    }
-}
-
-/**
- * @description: Read 1 byte, when ack=1, send ACK, when ack=0, send nACK
- * @param {*}
- * @return {*}
- */
-u8 MPU_IIC_Read_Byte(unsigned char ack)
-{
-    unsigned char i, receive = 0;
-    MPU_SDA_IN();
-    for (i = 0; i < 8; i++)
-    {
-        MPU_IIC_SCL = 0;
-        MPU_IIC_Delay();
-        MPU_IIC_SCL = 1;
-        receive <<= 1;
-        if (MPU_READ_SDA)
-            receive++;
-        MPU_IIC_Delay();
-    }
-    if (!ack)
-        MPU_IIC_NAck(); // No ACK
-    else
-        MPU_IIC_Ack(); // ACK
-    return receive;
-}
 
 /**
  * @description: initialize mpu6050,  return value: 0, success, other, error code
@@ -208,6 +28,8 @@ u8 MPU_IIC_Read_Byte(unsigned char ack)
 u8 MPU_Init(void)
 {
     MPU_IIC_Init();                          // initialize mpuiic
+    // mpu_status.ACK = MPU_IIC_Check_Device(MPU_ADDR);  
+
     MPU_Write_Byte(MPU_PWR_MGMT1_REG, 0X80); // reset mpu6050
     HAL_Delay(100);
     MPU_Write_Byte(MPU_PWR_MGMT1_REG, 0X00); // wake up MPU6050
@@ -219,7 +41,7 @@ u8 MPU_Init(void)
     MPU_Write_Byte(MPU_FIFO_EN_REG, 0X00);   // turn off FIFO
     // MPU_Write_Byte(MPU_INTBP_CFG_REG, 0X82); // INT pin is active low and enable bypass mode
 
-    MPU6050_ID = MPU_Read_Byte(MPU_DEVICE_ID_REG);    // MPU9250读出来是 0x70
+    mpu_status.ID = MPU_Read_Byte(MPU_DEVICE_ID_REG);    // MPU9250读出来是 0x70
 
     MPU_Write_Byte(MPU_PWR_MGMT1_REG, 0X01);	//Set CLKSEL and PLL, X axis as reference
     MPU_Write_Byte(MPU_PWR_MGMT2_REG, 0X00);	// Both accelerometer and gyroscope work

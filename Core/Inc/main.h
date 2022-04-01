@@ -34,7 +34,7 @@ extern "C" {
 #include "sys.h"
 #include "delay.h"
 #include "report.h"
-#include "mpu6050.h"
+#include "mpu.h"
 #include "retarget.h"
 /* USER CODE END Includes */
 

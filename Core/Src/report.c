@@ -1,7 +1,7 @@
 /*
  * @Date         : 2022-01-24 19:51:02
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-03-31 16:18:34
+ * @LastEditTime : 2022-04-01 21:11:15
  * @brief        : 向匿名地面站发送自定义数据, 发送的是不定长数据
  * @FilePath     : \LED\Core\Src\report.c
  * @Github       : https://github.com/Blackerrr
@@ -154,11 +154,11 @@ void Usart_Send_Data(uint8_t fun, uint8_t *data, uint8_t len)
  */
 void ANO_DT_UserData_Report(void)
 {
-    uint8_t channel_number = 2;
+    uint8_t channel_number = 3;
     /*****************************生成通道数据************************************/
-    DataScope_Get_Channel_Data(mag.AK8963_ID, 1, 1);
-    DataScope_Get_Channel_Data(MPU6050_ID, 2, 1);
-    DataScope_Get_Channel_Data(0, 3, 1);
+    DataScope_Get_Channel_Data(10, 1, 1);
+    DataScope_Get_Channel_Data(mpu_status.ACK, 2, 1);
+    DataScope_Get_Channel_Data(mpu_status.ID, 3, 1);
     DataScope_Get_Channel_Data(0, 4, 1);
     DataScope_Get_Channel_Data(0, 5, 1);
     DataScope_Get_Channel_Data(0, 6, 1);

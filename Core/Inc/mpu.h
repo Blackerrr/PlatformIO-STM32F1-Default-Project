@@ -1,8 +1,8 @@
 /*
  * @Date         : 2022-01-19 16:29:37
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-03-31 19:36:11
- * @FilePath     : \LED\Core\Inc\mpu6050.h
+ * @LastEditTime : 2022-04-01 20:43:33
+ * @FilePath     : \LED\Core\Inc\mpu.h
  * @Github       : https://github.com/Blackerrr
  * @Coding       : utf-8
  */
@@ -12,34 +12,7 @@
 #include "main.h"
 #include "math.h"
 #include "stdlib.h"
-
-/********************************* MPUIIC ***************************************/
-
-#define MPU_SDA_IN()              \
-    {                             \
-        GPIOC->CRL &= 0XFFFFFF0F; \
-        GPIOC->CRL |= 8 << 4;     \
-    }
-#define MPU_SDA_OUT()             \
-    {                             \
-        GPIOC->CRL &= 0XFFFFFF0F; \
-        GPIOC->CRL |= 3 << 4;     \
-    }
-
-#define MPU_IIC_SCL PCout(0) //SCL
-#define MPU_IIC_SDA PCout(1) //SDA
-#define MPU_READ_SDA PCin(1) // input SDA
-
-//IIC All function operations
-void MPU_IIC_Delay(void);                // MPU IIC delay function
-void MPU_IIC_Init(void);                 // Initialize the IO port of the IIC
-void MPU_IIC_Start(void);                // Send IIC start signal
-void MPU_IIC_Stop(void);                 // send IIC stop signal
-void MPU_IIC_Send_Byte(u8 txd);          // IIC sends a byte
-u8 MPU_IIC_Read_Byte(unsigned char ack); // IIC reads a byte
-u8 MPU_IIC_Wait_Ack(void);               // IIC waits for ACK signal
-void MPU_IIC_Ack(void);                  // IIC sends ACK signal
-void MPU_IIC_NAck(void);                 // IIC does not send ACK signal
+#include "mpuiic.h"
 
 
 /********************************* MPU6050 ***************************************/
@@ -184,6 +157,13 @@ void MPU_IIC_NAck(void);                 // IIC does not send ACK signal
 
 typedef struct
 {
+    uint8_t  ID;    // 读出来的ID
+    uint8_t  ACK;   // MPU设备是否应答 
+} MPU_Status;
+extern MPU_Status mpu_status; 
+
+typedef struct
+{
     double Roll;
     double Pitch;
     double Yaw;
@@ -217,7 +197,6 @@ extern float q0, q1, q2, q3;      //
 extern float exInt, eyInt, ezInt; //
 extern unsigned int a_LSB;        //
 extern float g_LSB;               //
-extern uint8_t MPU6050_ID;
 
 u8 MPU_Init(void);                                  // Initialize MPU6050
 u8 MPU_Write_Len(u8 addr, u8 reg, u8 len, u8 *buf); // IIC continuous write
@@ -243,7 +222,7 @@ float Kalman_Filter_Yaw(void);
 
 
 /*************************MPU9250 AK8963 Magnetometer Sensor******************************/
-#define USING_MAGNETOMETER 1
+#define USING_MAGNETOMETER 0
 typedef struct
 {
     u8 AK8963_ID;
