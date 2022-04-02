@@ -1,14 +1,14 @@
 /*
  * @Date         : 2022-01-19 16:29:37
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-04-01 20:43:33
+ * @LastEditTime : 2022-04-02 12:39:49
  * @FilePath     : \LED\Core\Inc\mpu.h
  * @Github       : https://github.com/Blackerrr
  * @Coding       : utf-8
  */
 
-#ifndef __MPU6050_H
-#define __MPU6050_H
+#ifndef __MPU_H
+#define __MPU_H
 #include "main.h"
 #include "math.h"
 #include "stdlib.h"
@@ -144,7 +144,7 @@
 #define AK8963_Control_1      0x0A
 #define AK8963_Control_2      0x0B
 #define AK8963_ST1_REG        0x02
-#define AK8963_ST2_REG        0x09
+#define AK8963_ST2_REG        0x09  
 #define AK8963_ASAX_REG       0x10
 #define AK8963_ASAY_REG       0x11
 #define AK8963_ASAZ_REG       0x12

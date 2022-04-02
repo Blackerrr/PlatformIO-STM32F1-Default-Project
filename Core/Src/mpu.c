@@ -1,8 +1,13 @@
 /*
  * @Date         : 2022-01-19 16:28:47
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-04-02 12:27:04
+<<<<<<< HEAD:Core/Src/mpu.c
+ * @LastEditTime : 2022-04-02 12:39:05
  * @FilePath     : \LED\Core\Src\mpu.c
+=======
+ * @LastEditTime : 2022-04-02 10:43:45
+ * @FilePath     : \LED\Core\Src\mpu6050.c
+>>>>>>> 10d0d3683c4671428d3992351860b07f07ff4b02:Core/Src/mpu6050.c
  * @Github       : https://github.com/Blackerrr
  * @Coding       : utf-8
  */
