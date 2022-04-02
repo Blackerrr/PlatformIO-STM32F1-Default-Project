@@ -1,7 +1,7 @@
 /*
  * @Date         : 2022-01-19 16:29:37
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-03-31 19:36:11
+ * @LastEditTime : 2022-04-02 10:44:37
  * @FilePath     : \LED\Core\Inc\mpu6050.h
  * @Github       : https://github.com/Blackerrr
  * @Coding       : utf-8
@@ -31,7 +31,7 @@
 #define MPU_READ_SDA PCin(1) // input SDA
 
 //IIC All function operations
-void MPU_IIC_Delay(void);                // MPU IIC delay function
+// void MPU_IIC_Delay(void);                // MPU IIC delay function
 void MPU_IIC_Init(void);                 // Initialize the IO port of the IIC
 void MPU_IIC_Start(void);                // Send IIC start signal
 void MPU_IIC_Stop(void);                 // send IIC stop signal
@@ -243,7 +243,7 @@ float Kalman_Filter_Yaw(void);
 
 
 /*************************MPU9250 AK8963 Magnetometer Sensor******************************/
-#define USING_MAGNETOMETER 1
+#define USING_MAGNETOMETER 0
 typedef struct
 {
     u8 AK8963_ID;
