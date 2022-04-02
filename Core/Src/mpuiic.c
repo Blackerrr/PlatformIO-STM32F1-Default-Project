@@ -1,7 +1,7 @@
 /*
  * @Date         : 2022-04-01 19:37:31
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-04-02 12:33:10
+ * @LastEditTime : 2022-04-02 22:31:55
  * @brief        : Do not edit
  * @FilePath     : \LED\Core\Src\mpuiic.c
  * @Github       : https://github.com/Blackerrr
@@ -22,29 +22,29 @@ static void MPU_IIC_Delay(u32 cnt)
 static void IIC_SDA_OUT(void)
 {
     // 使用寄存器操作比较迅速
-    GPIOC->CRL &= 0XFFFFFF0F;
-    GPIOC->CRL |= 3 << 4;
+    // GPIOC->CRL &= 0XFFFFFF0F;
+    // GPIOC->CRL |= 3 << 4;
 
     // 使用库切换的话时间肯定比上面的慢， 但也是可以用的，优先选择使用寄存器切换
-    // GPIO_InitTypeDef GPIO_Initure;
-    // GPIO_Initure.Pin = GPIO_PIN_1;
-    // GPIO_Initure.Mode = GPIO_MODE_OUTPUT_PP;
-    // GPIO_Initure.Speed = GPIO_SPEED_FREQ_HIGH;
-    // HAL_GPIO_Init(GPIOC, &GPIO_Initure);
+    GPIO_InitTypeDef GPIO_Initure;
+    GPIO_Initure.Pin = GPIO_PIN_1;
+    GPIO_Initure.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_Initure.Speed = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(GPIOC, &GPIO_Initure);
 }
 
 static void IIC_SDA_IN(void)
 {
     // 使用寄存器操作比较迅速
-    GPIOC->CRL &= 0XFFFFFF0F;
-    GPIOC->CRL |= 8 << 4;
+    // GPIOC->CRL &= 0XFFFFFF0F;
+    // GPIOC->CRL |= 8 << 4;
 
     // 使用库切换的话时间肯定比上面的慢， 但也是可以用的，优先选择使用寄存器切换
-    // GPIO_InitTypeDef GPIO_Initure;
-    // GPIO_Initure.Pin = GPIO_PIN_1;
-    // GPIO_Initure.Mode = GPIO_MODE_INPUT;
-    // GPIO_Initure.Speed = GPIO_SPEED_FREQ_HIGH;
-    // HAL_GPIO_Init(GPIOC, &GPIO_Initure);
+    GPIO_InitTypeDef GPIO_Initure;
+    GPIO_Initure.Pin = GPIO_PIN_1;
+    GPIO_Initure.Mode = GPIO_MODE_INPUT;
+    GPIO_Initure.Speed = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(GPIOC, &GPIO_Initure);
 }
 /**
  * @description:
@@ -211,6 +211,7 @@ void MPU_IIC_Send_Byte(u8 txd)
     {
         MPU_IIC_SDA = (txd & 0x80) >> 7;
         txd <<= 1;
+        MPU_IIC_Delay(1);   // 这个delay 加上比较好，不加上在F1上也是可以跑通的
         MPU_IIC_SCL = 1;
         MPU_IIC_Delay(2);
         MPU_IIC_SCL = 0;
