@@ -1,7 +1,7 @@
 /*
  * @Date         : 2022-04-01 19:37:31
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-04-01 21:51:31
+ * @LastEditTime : 2022-04-02 12:33:10
  * @brief        : Do not edit
  * @FilePath     : \LED\Core\Src\mpuiic.c
  * @Github       : https://github.com/Blackerrr
@@ -14,38 +14,38 @@
  * @param {cnt}  延时的us数
  * @return {*}
  */
-void MPU_IIC_Delay(uint16_t cnt)
+static void MPU_IIC_Delay(u32 cnt)
 {
     delay_us(cnt);
 }
 
-// static void IIC_SDA_OUT(void)
-// {
+static void IIC_SDA_OUT(void)
+{
+    // 使用寄存器操作比较迅速
+    GPIOC->CRL &= 0XFFFFFF0F;
+    GPIOC->CRL |= 3 << 4;
 
-//     GPIOC->CRL &= 0XFFFFFF0F;
-//     GPIOC->CRL |= 3 << 4;
+    // 使用库切换的话时间肯定比上面的慢， 但也是可以用的，优先选择使用寄存器切换
+    // GPIO_InitTypeDef GPIO_Initure;
+    // GPIO_Initure.Pin = GPIO_PIN_1;
+    // GPIO_Initure.Mode = GPIO_MODE_OUTPUT_PP;
+    // GPIO_Initure.Speed = GPIO_SPEED_FREQ_HIGH;
+    // HAL_GPIO_Init(GPIOC, &GPIO_Initure);
+}
 
-//     // GPIO_InitTypeDef GPIO_Initure;
-//     // GPIO_Initure.Pin = GPIO_PIN_1;
-//     // GPIO_Initure.Mode = GPIO_MODE_OUTPUT_PP;
-//     // GPIO_Initure.Speed = GPIO_SPEED_FREQ_HIGH;
-//     // HAL_GPIO_Init(GPIOC, &GPIO_Initure);
-// }
+static void IIC_SDA_IN(void)
+{
+    // 使用寄存器操作比较迅速
+    GPIOC->CRL &= 0XFFFFFF0F;
+    GPIOC->CRL |= 8 << 4;
 
-// static void IIC_SDA_IN(void)
-// {
-//     // 使用寄存器操作比较迅速
-//     GPIOC->CRL &= 0XFFFFFF0F;
-//     GPIOC->CRL |= 8 << 4;
-
-
-//     // 使用下面的代码切换的太慢了，虽然能读出数据，但是数据不对。一直在跳变
-//     // GPIO_InitTypeDef GPIO_Initure;
-//     // GPIO_Initure.Pin = GPIO_PIN_1;
-//     // GPIO_Initure.Mode = GPIO_MODE_INPUT;
-//     // GPIO_Initure.Speed = GPIO_SPEED_FREQ_HIGH;
-//     // HAL_GPIO_Init(GPIOC, &GPIO_Initure);
-// }
+    // 使用库切换的话时间肯定比上面的慢， 但也是可以用的，优先选择使用寄存器切换
+    // GPIO_InitTypeDef GPIO_Initure;
+    // GPIO_Initure.Pin = GPIO_PIN_1;
+    // GPIO_Initure.Mode = GPIO_MODE_INPUT;
+    // GPIO_Initure.Speed = GPIO_SPEED_FREQ_HIGH;
+    // HAL_GPIO_Init(GPIOC, &GPIO_Initure);
+}
 /**
  * @description:
  * @param {*}
@@ -60,7 +60,7 @@ void MPU_IIC_Init(void)
 
 #if USING_PP
     GPIO_Initure.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_Initure.Pull = GPIO_PULLUP;
+    // GPIO_Initure.Pull = GPIO_PULLUP;     // 一般IIC设备SCL和SDA 接上拉电阻
 #else
     GPIO_Initure.Mode = GPIO_MODE_OUTPUT_OD;    // 开漏输出模式
 #endif
@@ -104,7 +104,7 @@ void MPU_IIC_Start(void)
     MPU_IIC_SDA = 0;    // START:when CLK is high,DATA change form high to low
     MPU_IIC_Delay(2);
     MPU_IIC_SCL = 0;    // Clamp the I2C bus, ready to send or receive data
-    // MPU_IIC_Delay(2);
+    MPU_IIC_Delay(2);
 
 }
 
@@ -122,7 +122,7 @@ void MPU_IIC_Stop(void)
     MPU_IIC_SDA = 0;  //STOP:when CLK is high DATA change form low to high
     MPU_IIC_Delay(2);
     MPU_IIC_SCL = 1;
-    // MPU_IIC_Delay(2);
+    MPU_IIC_Delay(2);
     MPU_IIC_SDA = 1;  // Send I2C bus end signal
     MPU_IIC_Delay(2);
 }
@@ -165,11 +165,11 @@ u8 MPU_IIC_Wait_Ack(void)
  */
 void MPU_IIC_Ack(void)
 {
+    MPU_IIC_SCL = 0;
 #if USING_PP
-    IIC_SDA_OUT();
+    IIC_SDA_OUT();      // 必须先将SCL置0,再置SDA为输出
 #endif
     MPU_IIC_SDA = 0;    // master控制SDA为低表示应答
-    MPU_IIC_SCL = 0;
     MPU_IIC_Delay(2);
     MPU_IIC_SCL = 1;    // master产生一个时钟
     MPU_IIC_Delay(2);
@@ -184,11 +184,11 @@ void MPU_IIC_Ack(void)
  */
 void MPU_IIC_NAck(void)
 {
+    MPU_IIC_SCL = 0;
 #if USING_PP
     IIC_SDA_OUT();
 #endif
     MPU_IIC_SDA = 1;   // master控制SDA为高表示应答
-    MPU_IIC_SCL = 0;
     MPU_IIC_Delay(2);
     MPU_IIC_SCL = 1;
     MPU_IIC_Delay(2);
@@ -215,8 +215,8 @@ void MPU_IIC_Send_Byte(u8 txd)
         MPU_IIC_Delay(2);
         MPU_IIC_SCL = 0;
         MPU_IIC_Delay(2);
-        // if (t == 7)
-            // MPU_IIC_SDA = 1;   // 释放总线
+        if (t == 7)
+            MPU_IIC_SDA = 1;   // 释放总线
     }
 }
 
@@ -227,6 +227,7 @@ void MPU_IIC_Send_Byte(u8 txd)
  */
 u8 MPU_IIC_Read_Byte(unsigned char ack)
 {
+    // 不管前面应答还是不应答。这边数据读取都不会受到影响
 #if USING_PP
     IIC_SDA_IN();
 #endif

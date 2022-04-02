@@ -1,7 +1,7 @@
 /*
  * @Date         : 2022-04-01 19:39:42
  * @LastEditors  : liu wei
- * @LastEditTime : 2022-04-01 21:42:55
+ * @LastEditTime : 2022-04-02 12:30:33
  * @brief        : Do not edit
  * @FilePath     : \LED\Core\Inc\mpuiic.h
  * @Github       : https://github.com/Blackerrr
@@ -14,27 +14,17 @@
 
 /********************************* MPUIIC ***************************************/
 
-#define IIC_SDA_IN()              \
-    {                             \
-        GPIOC->CRL &= 0XFFFFFF0F; \
-        GPIOC->CRL |= 8 << 4;     \
-    }
-#define IIC_SDA_OUT()             \
-    {                             \
-        GPIOC->CRL &= 0XFFFFFF0F; \
-        GPIOC->CRL |= 3 << 4;     \
-    }
 
 #define MPU_IIC_SCL PCout(0) //SCL
 #define MPU_IIC_SDA PCout(1) //SDA
 #define MPU_READ_SDA PCin(1) // input SDA
 
-#define USING_PP    1         // 1 IIC 使用推挽   0  IIC 使用开漏
+#define USING_PP    0         // 1 IIC 使用推挽   0  IIC 使用开漏
 
 
 
 //IIC All function operations
-void MPU_IIC_Delay(uint16_t cnt);        // MPU IIC delay function
+// void MPU_IIC_Delay(uint16_t cnt);        // MPU IIC delay function
 void MPU_IIC_Init(void);                 // Initialize the IO port of the IIC
 void MPU_IIC_Start(void);                // Send IIC start signal
 void MPU_IIC_Stop(void);                 // send IIC stop signal
